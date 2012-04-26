@@ -2,6 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/*
+ * Some commands from RFCs 2811 & 2812 (which obsoletes RFC 1459) for which are
+ * unhandled in Instantbird.
+ */
+
 Components.utils.import("resource:///modules/imXPCOMUtils.jsm");
 Components.utils.import("resource:///modules/ircHandlers.jsm");
 
@@ -9,8 +14,7 @@ XPCOMUtils.defineLazyGetter(this, "_", function()
   l10nHelper("chrome://irc-extras/locale/irc.properties")
 );
 
-// Some commands from RFCs 2811 & 2812 (which obsoletes RFC 1459) for which are
-// unhandled in Instantbird.
+
 var ircExtras = {
   // Parameters
   name: "IRC Extras", // Name identifier
