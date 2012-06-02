@@ -19,6 +19,7 @@ var ircExtras = {
   // Parameters
   name: "IRC Extras", // Name identifier
   priority: ircHandlers.DEFAULT_PRIORITY + 5,
+  isEnabled: function() true,
 
   commands: {
     "333": function(aMessage) { // nonstandard
