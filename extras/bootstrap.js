@@ -9,6 +9,7 @@
 
 Components.utils.import("resource:///modules/imXPCOMUtils.jsm");
 Components.utils.import("resource:///modules/ircHandlers.jsm");
+Components.utils.import("resource:///modules/ircUtils.jsm");
 
 XPCOMUtils.defineLazyGetter(this, "_", function()
   l10nHelper("chrome://irc-extras/locale/irc.properties")
@@ -22,6 +23,22 @@ var ircExtras = {
   isEnabled: function() true,
 
   commands: {
+    "329": function(aMessage) { // RPL_CREATIONTIME (Bahamut & Unreal)
+      // <channel> <creation time>
+      // The creation time is in seconds since the UNIX Epoch, JavaScript wants
+      // it in milliseconds.
+      let date = new Date(parseInt(aMessage.params[2]) * 1000);
+      if (date == "Invalid Date") {
+        // Something went wrong parsing as an integer or converting to a date.
+        WARN("Unable to convert " + aMessage.params[2] + " to a date.");
+        return false;
+      }
+      let msg = _("message.creationTime", aMessage.params[1], date);
+      this.getConversation(aMessage.params[1])
+          .writeMessage(null, msg, {system: true});
+      return true;
+    },
+
     "333": function(aMessage) { // nonstandard
       // <channel> <nickname> <time>
       let conversation = this.getConversation(aMessage.params[1]);
