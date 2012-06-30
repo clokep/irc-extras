@@ -9,6 +9,7 @@
 Components.utils.import("resource:///modules/imXPCOMUtils.jsm");
 Components.utils.import("resource:///modules/ircHandlers.jsm");
 
+// See chat/protocols/irc/ircHandlers.jsm for what each field represents.
 var ircExample = {
   name: "IRC Example",
   // Slightly above the default priority so we run before the main IRC handler.
