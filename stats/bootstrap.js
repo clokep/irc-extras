@@ -95,6 +95,11 @@ var ircStats = {
 
 // Save the version response (or undefined if an error occurred) into the Map.
 function versionResponse(aAccount, aMessage, aError = false) {
+  // If a PRIVMSG is received, we received a query. Fall-through to the normal
+  // handler.
+  if (aMessage.command == "PRIVMSG")
+    return false;
+
   // If the nick is not in the map, fall through to the normal handler.
   if (!aAccount.stats.has(aMessage.nickname))
     return false;
@@ -144,6 +149,16 @@ var commands = [{
     account.statsQueue = [];
     account.statsTimer = null;
 
+    // Queue a bunch of stuff here.
+    account.conversations.forEach(aConv => {
+      if (!aConv.isChat)
+        return;
+
+      aConv._participants.forEach(aParticipant => {
+        queueVersion(account, aParticipant.name);
+      });
+    });
+
     return true;
   }
 },
@@ -177,11 +192,33 @@ var commands = [{
     if (!account.stats)
       return false;
 
+    // Generate some statistics.
+    let counts = new Map();
+    let total = 0;
+    let noResponse = 0;
+    for (let result of account.stats.values()) {
+      if (result.pendingVersion) {
+        ++noResponse;
+        continue;
+      }
+
+      let version = result.version;
+
+      if (!counts.has(version))
+        counts.set(version, 0);
+
+      counts.set(version, counts.get(version) + 1);
+      ++total;
+    }
+
     // TODO Display stats in a tab.
-    let str = ""
-    for (let [nick, result] of account.stats.entries())
-      str += nick + ": " + result.version + "\n";
-    Components.utils.reportError(str);
+    let str = "Total hits: " + total + "\n";
+    str += "Waiting for: " + noResponse + "\n";
+    for (let [version, count] of counts.entries()) {
+      let percentage = Math.round((count / total) * 100) / 100;
+      str += "'" + version + "': " + percentage + "% (" + count + ")\n";
+    }
+    aConv.wrappedJSObject.writeMessage("Stats", str, {system: true});
 
     return true;
   }
