@@ -169,7 +169,6 @@ function stopStats(aAccount) {
   delete aAccount.statsTimer;
 }
 
-
 var commands = [{
   name: "stats",
   get helpString() _("command.stats", "stats"),

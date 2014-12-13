@@ -11,16 +11,34 @@
   <binding id="ircStatsPanel" role="outerdoc">
     <content flex="1">
       <xul:vbox flex="1">
+        <xul:toolbar>
+          <xul:toolbarbutton anonid="copyButton" label="Copy Data"
+                             oncommand="document.getBindingParent(this).copyData();"/>
+        </xul:toolbar>
         <xul:browser anonid="ircStatsBrowser" disablehistory="true" type="content"
                      flex="1" src="chrome://irc-stats/content/ircStats.html"/>
       </xul:vbox>
     </content>
 
     <implementation>
+      <field name="_stats">null</field>
+
+      <method name="copyData">
+        <body>
+        <![CDATA[
+          let data = [d for (d of this._stats.entries())];
+          Components.classes["@mozilla.org/widget/clipboardhelper;1"]
+                    .getService(Components.interfaces.nsIClipboardHelper)
+                    .copyString(JSON.stringify(data));
+        ]]>
+        </body>
+      </method>
+
       <method name="updateStats">
         <parameter name="aStats"/>
         <body>
         <![CDATA[
+          this._stats = aStats;
           this.browser.contentWindow.updateStats(aStats);
         ]]>
         </body>
