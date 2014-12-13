@@ -1,21 +1,31 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
 <html>
-    <head>
-        <script type="application/javascript" src="awesomechart.js"></script>
+  <head>
+    <script type="application/javascript" src="awesomechart.js"></script>
+    <script type="application/javascript" src="ircStats.js"></script>
+    <link rel="stylesheet" type="text/css" href="ircStats.css">
+  </head>
+  <body>
+    <h2>Summary:</h2>
+    <div id="summary">
+      <b>Total: </b> <span id="total"></span>
+      <b>Pending: </b> <span id="pending"></span>
+    </div>
 
-        <script type="application/javascript">
-          function plotStats(aTotal, aNoResponse, aCounts) {
-            var plot = new AwesomeChart('client-count');
-            plot.title = "Client Percentages";
-            plot.data = [v for (v of aCounts.values())];
-            plot.labels = [k for (k of aCounts.keys())];
-            plot.draw();
-          }
-        </script>
-    </head>
-    <body>
-        <canvas id="client-count" width="300" height="300">
-           Your web-browser does not support the HTML 5 canvas element.
-        </canvas>
+    <h2>Plots:</h2>
+    <div id="plots">
+      <canvas id="client-count">
+        Your web-browser does not support the HTML 5 canvas element.
+      </canvas>
+      <canvas id="family-count">
+        Your web-browser does not support the HTML 5 canvas element.
+      </canvas>
+    </div>
 
-    </body>
+    <h2>Logs:</h2>
+    <div id="logs"></div>
+  </body>
 </html>

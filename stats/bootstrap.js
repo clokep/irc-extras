@@ -119,6 +119,11 @@ function versionResponse(aAccount, aMessage, aError = false) {
   else
     stats.version = aMessage.ctcp.param;
 
+  // Display the results.
+  aAccount.statsPanel.logMessage(
+    _("logs.responseReceived", aMessage.origin, stats.version));
+  aAccount.statsPanel.updateStats(aAccount.stats);
+
   return true;
 }
 var ctcpStats = {
@@ -139,56 +144,33 @@ var ctcpStats = {
 
 // Get the JavaScript account object.
 function getAccount(aConv) aConv.wrappedJSObject._account;
-var commands = [
-{
-  name: "statsstart",
-  get helpString() _("command.stats.start", "statsstart"),
-  usageContext: Ci.imICommand.CMD_CONTEXT_ALL,
-  priority: Ci.imICommand.CMD_PRIORITY_DEFAULT,
-  run: function(aMsg, aConv) {
-    let account = getAccount(aConv);
 
-    if (account.stats)
-      return false;
+function startStats(aAccount) {
+  // Start keeping stats on this server.
+  aAccount.stats = new NormalizedMap(aAccount.normalizeNick.bind(aAccount));
+  aAccount.statsQueue = [];
+  aAccount.statsTimer = null;
 
-    // Start keeping stats on this server.
-    account.stats = new NormalizedMap(account.normalizeNick.bind(account));
-    account.statsQueue = [];
-    account.statsTimer = null;
+  // Queue a bunch of stuff here.
+  aAccount.conversations.forEach(aConv => {
+    if (!aConv.isChat)
+      return;
 
-    // Queue a bunch of stuff here.
-    account.conversations.forEach(aConv => {
-      if (!aConv.isChat)
-        return;
-
-      aConv._participants.forEach(aParticipant => {
-        queueVersion(account, aParticipant.name);
-      });
+    aConv._participants.forEach(aParticipant => {
+      queueVersion(aAccount, aParticipant.name);
     });
+  });
+}
 
-    return true;
-  }
-},
-{
-  name: "statsstop",
-  get helpString() _("command.stats.stop", "statsstop"),
-  usageContext: Ci.imICommand.CMD_CONTEXT_ALL,
-  priority: Ci.imICommand.CMD_PRIORITY_DEFAULT,
-  run: function(aMsg, aConv) {
-    let account = getAccount(aConv);
+function stopStats(aAccount) {
+  // Stop keeping stats on this server.
+  delete aAccount.stats;
+  delete aAccount.statsQueue;
+  delete aAccount.statsTimer;
+}
 
-    if (!account.stats)
-      return false;
 
-    // Stop keeping stats on this server.
-    delete account.stats;
-    delete account.statsQueue;
-    delete account.statsTimer;
-
-    return true;
-  }
-},
-{
+var commands = [{
   name: "stats",
   get helpString() _("command.stats", "stats"),
   usageContext: Ci.imICommand.CMD_CONTEXT_ALL,
@@ -196,43 +178,13 @@ var commands = [
   run: function(aMsg, aConv) {
     let account = getAccount(aConv);
 
-    if (!account.stats)
-      return false;
-
-    // Generate some statistics.
-    let counts = new Map();
-    let total = 0;
-    let noResponse = 0;
-    for (let result of account.stats.values()) {
-      if (result.pendingVersion) {
-        ++noResponse;
-        continue;
-      }
-
-      let version = result.version;
-
-      if (!counts.has(version))
-        counts.set(version, 0);
-
-      counts.set(version, counts.get(version) + 1);
-      ++total;
-    }
+    // Start the backend.
+    startStats(account);
 
     // Display stats in a tab.
     Core.showTab("ircStatsPanel", (aPanel) => {
-      aPanel.browser.addEventListener("DOMContentLoaded", () => {
-        aPanel.showStats(total, noResponse, counts);
-      });
+      account.statsPanel = aPanel;
     });
-
-    // TODO Display stats in a tab.
-    let str = "Total hits: " + total + "\n";
-    str += "Waiting for: " + noResponse + "\n";
-    for (let [version, count] of counts.entries()) {
-      let percentage = Math.round((count / total) * 100) / 100;
-      str += "'" + version + "': " + percentage + "% (" + count + ")\n";
-    }
-    aConv.wrappedJSObject.writeMessage("Stats", str, {system: true});
 
     return true;
   }
