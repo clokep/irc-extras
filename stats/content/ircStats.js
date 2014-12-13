@@ -61,12 +61,14 @@ function createPlot(aId, aTitle, aData) {
   // of x-index to value, the other is x-index to label.
   var labels = [];
   for (var i = 0; i < data.length; i++) {
-    labels[i] = [i, data[i][0]];
+    // Sometimes the labels are stupid long.
+    labels[i] = [i, data[i][0].slice(0, 25)];
     data[i] = [i, data[i][1]];
   }
 
   var options = {
     title: aTitle,
+    HtmlText: false,
     bars: {
       show: true,
       shadowSize: 0,
@@ -77,11 +79,14 @@ function createPlot(aId, aTitle, aData) {
       relative: true
     },
     xaxis: {
-      ticks: labels
+      ticks: labels,
+      labelsAngle: 90
     },
     yaxis: {
       min: 0,
-      autoscaleMargin: 1
+      autoscaleMargin: 1,
+      title: "Count",
+      titleAngle: 90
     }
   };
 
@@ -122,5 +127,11 @@ if (false) {
     logMessage("Test 1");
     logMessage("Test 2");
     logMessage("Test 3 longer test");
+  });
+}
+if (false) {
+  document.addEventListener("DOMContentLoaded", function() {
+    var data = new Map();
+    updateStats(data);
   });
 }
