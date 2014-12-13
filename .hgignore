@@ -1,5 +1,6 @@
 syntax: glob
 
-*/install.rdf
-*/chrome.manifest
-*/*.xpi
+install.rdf
+chrome.manifest
+*.xpi
+.DS_Store

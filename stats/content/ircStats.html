@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <script type="application/javascript" src="awesomechart.js"></script>
+
+        <script type="application/javascript">
+          function plotStats(aTotal, aNoResponse, aCounts) {
+            var plot = new AwesomeChart('client-count');
+            plot.title = "Client Percentages";
+            plot.data = [v for (v of aCounts.values())];
+            plot.labels = [k for (k of aCounts.keys())];
+            plot.draw();
+          }
+        </script>
+    </head>
+    <body>
+        <canvas id="client-count" width="300" height="300">
+           Your web-browser does not support the HTML 5 canvas element.
+        </canvas>
+
+    </body>
+</html>

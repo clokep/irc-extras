@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const {interfaces: Ci, utils: Cu} = Components;
+const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 
 Cu.import("resource:///modules/ibCore.jsm");
 Cu.import("resource:///modules/imXPCOMUtils.jsm");
@@ -13,6 +13,8 @@ Cu.import("resource:///modules/NormalizedMap.jsm");
 XPCOMUtils.defineLazyGetter(this, "_", function()
   l10nHelper("chrome://irc-stats/locale/irc.properties")
 );
+
+const kStyleSheetOverlay = "chrome://irc-stats/content/instantbird.css";
 
 const kStatsDelay = 5 * 1000; // 5 seconds
 
@@ -47,18 +49,21 @@ function requestVersion(aAccount, aNick) {
  * Only request new versions once every few seconds.
  */
 function queueVersion(aAccount, aNick) {
+  // Ensure we normalize the nick.
+  let nick = aAccount.normalizeNick(aNick);
+
   // Do not re-queue someone.
-  if (aAccount.stats.has(aNick))
+  if (aAccount.stats.has(nick))
     return;
 
   // If there's nothing pending, immediately request it.
   if (!aAccount.statsTimer) {
-    requestVersion(aAccount, aNick);
+    requestVersion(aAccount, nick);
     return;
   }
 
   // Otherwise throw it on the queue.
-  aAccount.statsQueue.push(aNick);
+  aAccount.statsQueue.push(nick);
 }
 
 var ircStats = {
@@ -70,7 +75,7 @@ var ircStats = {
   commands: {
     "JOIN": function(aMessage) {
       // Add this nick to the list of nicks.
-      queueVersion(this, aMessage.nickname);
+      queueVersion(this, aMessage.origin);
 
       // Ensure the normal handler runs.
       return false;
@@ -98,10 +103,10 @@ function versionResponse(aAccount, aMessage, aError = false) {
     return false;
 
   // If the nick is not in the map, fall through to the normal handler.
-  if (!aAccount.stats.has(aMessage.nickname))
+  if (!aAccount.stats.has(aMessage.origin))
     return false;
 
-  let stats = aAccount.stats.get(aMessage.nickname);
+  let stats = aAccount.stats.get(aMessage.origin);
 
   // If there is not a pending version, fall through.
   if (!stats.pendingVersion)
@@ -214,7 +219,11 @@ var commands = [
     }
 
     // Display stats in a tab.
-    Core.showTab("ircStatsPanel", aPanel => aPanel.showStats(total, noResponse, counts));
+    Core.showTab("ircStatsPanel", (aPanel) => {
+      aPanel.browser.addEventListener("DOMContentLoaded", () => {
+        aPanel.showStats(total, noResponse, counts);
+      });
+    });
 
     // TODO Display stats in a tab.
     let str = "Total hits: " + total + "\n";
@@ -245,11 +254,24 @@ function startup(aData, aReason) {
     registerCommands()
   else
     Services.obs.addObserver(initializer, "prpl-init", false);
+
+  // Load stylesheets.
+  let styleSheetService = Cc["@mozilla.org/content/style-sheet-service;1"]
+                            .getService(Ci.nsIStyleSheetService);
+  let styleSheetUri = Services.io.newURI(kStyleSheetOverlay, null, null);
+  styleSheetService.loadAndRegisterSheet(styleSheetUri, styleSheetService.AUTHOR_SHEET);
 }
 function shutdown(aData, aReason) {
   ircHandlers.unregisterHandler(ircStats);
   ircHandlers.unregisterCTCPHandler(ctcpStats);
   commands.forEach(cmd => Services.cmd.unregisterCommand(cmd));
+
+  // Unload stylesheets.
+  let styleSheetService = Cc["@mozilla.org/content/style-sheet-service;1"]
+                            .getService(Ci.nsIStyleSheetService);
+  let styleSheetUri = Services.io.newURI(kStyleSheetOverlay, null, null);
+  if (styleSheetService.sheetRegistered(styleSheetUri, styleSheetService.AUTHOR_SHEET))
+    styleSheetService.unregisterSheet(styleSheetUri, styleSheetService.AUTHOR_SHEET);
 }
 
 function install(aData, aReason) {}

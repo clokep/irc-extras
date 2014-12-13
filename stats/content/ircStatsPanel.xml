@@ -8,11 +8,11 @@
           xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
           xmlns:xbl="http://www.mozilla.org/xbl">
 
-  <binding id="ircStatsPanel">
+  <binding id="ircStatsPanel" role="outerdoc">
     <content flex="1">
       <xul:vbox flex="1">
         <xul:browser anonid="ircStatsBrowser" disablehistory="true" type="content"
-                     flex="1" tooltip="imTooltip"/>
+                     flex="1" src="chrome://irc-stats/content/ircStats.html"/>
       </xul:vbox>
     </content>
 
@@ -23,8 +23,7 @@
         <parameter name="aCounts"/>
         <body>
         <![CDATA[
-          let url = aPage.startsWith("about:") ? aPage : "about:" + aPage;
-          this.browser.loadURI(url);
+          this.browser.contentWindow.plotStats(aTotal, aNoResponse, aCounts);
         ]]>
         </body>
       </method>
@@ -47,7 +46,7 @@
         <parameter name="aAboutPanel"/>
         <body>
         <![CDATA[
-          this.browser.swapDocShells(aAboutPanel.browser);
+          //this.browser.swapDocShells(aAboutPanel.browser);
           //this.refreshTitle();
         ]]>
         </body>
