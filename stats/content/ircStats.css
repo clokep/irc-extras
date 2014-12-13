@@ -2,17 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#summary {
-  display: inline;
-}
-
 #plots {
   display: inline;
 }
 
-canvas {
-  width: 50%;
+#plots div {
+  width: 300px;
   height: 300px;
+}
+
+#client-count, #family-count {
+  width: 300px;
+  height: 300px;
+  margin: 0 3px;
+  float: left;
+}
+
+#clearer {
+  clear: both;
 }
 
 #logs {

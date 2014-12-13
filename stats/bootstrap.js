@@ -178,12 +178,13 @@ var commands = [{
   run: function(aMsg, aConv) {
     let account = getAccount(aConv);
 
-    // Start the backend.
-    startStats(account);
-
     // Display stats in a tab.
     Core.showTab("ircStatsPanel", (aPanel) => {
+      // Save this panel.
       account.statsPanel = aPanel;
+
+      // Start the backend.
+      startStats(account);
     });
 
     return true;

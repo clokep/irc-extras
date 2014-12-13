@@ -4,7 +4,7 @@
 
 <html>
   <head>
-    <script type="application/javascript" src="awesomechart.js"></script>
+    <script type="application/javascript" src="flotr2.min.js"></script>
     <script type="application/javascript" src="ircStats.js"></script>
     <link rel="stylesheet" type="text/css" href="ircStats.css">
   </head>
@@ -16,14 +16,10 @@
     </div>
 
     <h2>Plots:</h2>
-    <div id="plots">
-      <canvas id="client-count">
-        Your web-browser does not support the HTML 5 canvas element.
-      </canvas>
-      <canvas id="family-count">
-        Your web-browser does not support the HTML 5 canvas element.
-      </canvas>
-    </div>
+    <!-- Flotr2 seems to break if this is inside another div. -->
+    <div id="client-count"></div>
+    <div id="family-count"></div>
+    <div id="clearer"></div>
 
     <h2>Logs:</h2>
     <div id="logs"></div>

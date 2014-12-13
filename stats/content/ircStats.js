@@ -12,7 +12,7 @@ function updateStats(aStats) {
   // been received.
   var pendingResponses = 0;
 
-  for (var result of aStats) {
+  for (var result of aStats.values()) {
     // Still waiting for a response...
     if (result.pendingVersion) {
       ++pendingResponses;
@@ -56,14 +56,37 @@ function createPlot(aId, aTitle, aData) {
   // Put the data in order from biggest to smallest.
   var data = [d for (d of aData.entries())];
   data.sort(function(a, b) a[1] < b[1]);
-  var labels = data.map(function(a) a[0]);
-  var values = data.map(function(a) a[1]);
 
-  var plot = new AwesomeChart(aId);
-  plot.title = aTitle;
-  plot.data = values;
-  plot.labels = labels;
-  plot.draw();
+  // Re-arrange the data to be plotted into two arrays: one is a set of points
+  // of x-index to value, the other is x-index to label.
+  var labels = [];
+  for (var i = 0; i < data.length; i++) {
+    labels[i] = [i, data[i][0]];
+    data[i] = [i, data[i][1]];
+  }
+
+  var options = {
+    title: aTitle,
+    bars: {
+      show: true,
+      shadowSize: 0,
+      barWidth: 0.5
+    },
+    mouse: {
+      track: true,
+      relative: true
+    },
+    xaxis: {
+      ticks: labels
+    },
+    yaxis: {
+      min: 0,
+      autoscaleMargin: 1
+    }
+  };
+
+  var plot = document.getElementById(aId);
+  Flotr.draw(plot, [data], options);
 }
 
 function logMessage(aMsg) {
@@ -79,3 +102,25 @@ for (let [version, count] of clients.entries()) {
   str += "'" + version + "': " + percentage + "% (" + count + ")\n";
 }
 */
+
+// DEBUG
+if (false) {
+  document.addEventListener("DOMContentLoaded", function() {
+    var clients = new Map();
+    clients.set("Instantbird 1.6pre", 3);
+    clients.set("Instantbird 1.5", 1);
+    clients.set("Thunderbird", 2);
+    clients.set(undefined, 1);
+
+    var families = new Map();
+    families.set("Instantbird", 4);
+    families.set("Thunderbird", 2);
+    families.set(undefined, 1);
+
+    displayStats(10, 3, clients, families)
+
+    logMessage("Test 1");
+    logMessage("Test 2");
+    logMessage("Test 3 longer test");
+  });
+}
