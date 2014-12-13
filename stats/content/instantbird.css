@@ -1,0 +1,3 @@
+ircStatsPanel {
+  -moz-binding: url("chrome://irc-stats/content/ircStatsPanel.xml#ircStatsPanel");
+}

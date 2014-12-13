@@ -2,12 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/*
- * Add hacky /ignore, /unignore and /ignored commands to Instantbird.
- */
-
 const {interfaces: Ci, utils: Cu} = Components;
 
+Cu.import("resource:///modules/ibCore.jsm");
 Cu.import("resource:///modules/imXPCOMUtils.jsm");
 Cu.import("resource:///modules/imServices.jsm");
 Cu.import("resource:///modules/ircHandlers.jsm");
@@ -110,7 +107,7 @@ function versionResponse(aAccount, aMessage, aError = false) {
   if (!stats.pendingVersion)
     return false;
 
-  // Save the version response and the time.
+  // Save the version response.
   delete stats.pendingVersion;
   if (aError)
     stats.version = undefined;
@@ -126,14 +123,19 @@ var ctcpStats = {
   isEnabled: function() this.stats,
 
   commands: {
-    "VERSION": function (aMessage) versionResponse(this, aMessage),
-    "ERRMSG": function (aMessage) versionResponse(this, aMessage, true)
+    "VERSION": function(aMessage) versionResponse(this, aMessage),
+    "ERRMSG": function(aMessage) {
+      if (aMessage.ctcp.param == "VERSION")
+        return versionResponse(this, aMessage, true);
+      return false;
+    }
   }
 };
 
 // Get the JavaScript account object.
 function getAccount(aConv) aConv.wrappedJSObject._account;
-var commands = [{
+var commands = [
+{
   name: "statsstart",
   get helpString() _("command.stats.start", "statsstart"),
   usageContext: Ci.imICommand.CMD_CONTEXT_ALL,
@@ -210,6 +212,9 @@ var commands = [{
       counts.set(version, counts.get(version) + 1);
       ++total;
     }
+
+    // Display stats in a tab.
+    Core.showTab("ircStatsPanel", aPanel => aPanel.showStats(total, noResponse, counts));
 
     // TODO Display stats in a tab.
     let str = "Total hits: " + total + "\n";

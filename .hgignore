@@ -1,0 +1,5 @@
+syntax: glob
+
+*/install.rdf
+*/chrome.manifest
+*/*.xpi

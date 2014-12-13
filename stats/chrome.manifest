@@ -1,3 +1,0 @@
-locale irc-stats en-US locales/en-US/
-content irc-stats content/
-style chrome://instantbird/content/tabbrowser.xml  chrome://irc-stats/overlay.css
